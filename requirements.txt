@@ -1,6 +1,6 @@
 numpy
 pandas
-gym
+gym==0.15.4
 matplotlib
 opencv-python
 pygame
