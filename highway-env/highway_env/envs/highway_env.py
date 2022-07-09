@@ -102,6 +102,45 @@ class HighwayEnv(AbstractEnv):
         reward = 0 if not self.vehicle.on_road else reward
         return reward
 
+
+    def step(self, action: int) -> Tuple[np.ndarray, float, bool, dict]:
+        agent_info = []
+        obs, reward, done, info = super().step(action)
+        info["agents_dones"] = tuple(self._agent_is_terminal(vehicle) for vehicle in self.controlled_vehicles)
+        for v in self.controlled_vehicles:
+            agent_info.append([v.position[0], v.position[1], v.speed])
+        info["agents_info"] = agent_info
+
+        for vehicle in self.controlled_vehicles:
+            vehicle.local_reward = self._agent_reward(action, vehicle)
+        # local reward
+        info["agents_rewards"] = tuple(vehicle.local_reward for vehicle in self.controlled_vehicles)
+        # regional reward
+        self._regional_reward()
+        info["regional_rewards"] = tuple(vehicle.regional_reward for vehicle in self.controlled_vehicles)
+
+        obs = np.asarray(obs).reshape((len(obs), -1))
+        return obs, reward, done, info
+
+    def _is_terminal(self) -> bool:
+        """The episode is over when a collision occurs or when the access ramp has been passed."""
+        return any(vehicle.crashed for vehicle in self.controlled_vehicles) \
+               or self.time >= self.config["duration"] * self.config["policy_frequency"] \
+               or (self.config["offroad_terminal"] and not self.vehicle.on_road)
+
+    def _agent_is_terminal(self, vehicle: Vehicle) -> bool:
+        """The episode is over when a collision occurs or when the access ramp has been passed."""
+        return vehicle.crashed \
+               or self.time >= self.config["duration"] * self.config["policy_frequency"] \
+               or (self.config["offroad_terminal"] and not self.vehicle.on_road)
+
+    # def _is_terminal(self) -> bool:
+    #     """The episode is over if the ego vehicle crashed or the time is out."""
+    #     return self.vehicle.crashed or \
+    #         self.time >= self.config["duration"] or \
+    #         (self.config["offroad_terminal"] and not self.vehicle.on_road)
+
+
     def _reset(self) -> None:
         self._create_road()
         self._create_vehicles()
@@ -134,11 +173,6 @@ class HighwayEnv(AbstractEnv):
                 self.road.vehicles.append(vehicle)
 
 
-    def _is_terminal(self) -> bool:
-        """The episode is over if the ego vehicle crashed or the time is out."""
-        return self.vehicle.crashed or \
-            self.time >= self.config["duration"] or \
-            (self.config["offroad_terminal"] and not self.vehicle.on_road)
 
     def _cost(self, action: int) -> float:
         """The cost signal is the occurrence of collision."""
