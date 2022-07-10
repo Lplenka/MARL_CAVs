@@ -78,12 +78,14 @@ class HighwayEnv(AbstractEnv):
         """
 
         # the optimal reward is 0
-        scaled_speed = utils.lmap(vehicle.speed, self.config["reward_speed_range"], [0, 1])
+        #scaled_speed = utils.lmap(vehicle.speed, self.config["reward_speed_range"], [0, 1])
         neighbours = self.road.network.all_side_lanes(self.vehicle.lane_index)
         lane = self.vehicle.target_lane_index[2] if isinstance(self.vehicle, ControlledVehicle) \
             else self.vehicle.lane_index[2]
         # Use forward speed rather than speed, see https://github.com/eleurent/highway-env/issues/268
         forward_speed = self.vehicle.speed * np.cos(self.vehicle.heading)
+        
+        scaled_speed = utils.lmap(forward_speed, self.config["reward_speed_range"], [0, 1])
         # compute headway cost
         headway_distance = self._compute_headway_distance(vehicle)
         Headway_cost = np.log(
@@ -115,9 +117,9 @@ class HighwayEnv(AbstractEnv):
             vehicle.local_reward = self._agent_reward(action, vehicle)
         # local reward
         info["agents_rewards"] = tuple(vehicle.local_reward for vehicle in self.controlled_vehicles)
-        # regional reward
-        self._regional_reward()
-        info["regional_rewards"] = tuple(vehicle.regional_reward for vehicle in self.controlled_vehicles)
+        # # regional reward
+        # self._regional_reward()
+        # info["regional_rewards"] = tuple(vehicle.regional_reward for vehicle in self.controlled_vehicles)
 
         obs = np.asarray(obs).reshape((len(obs), -1))
         return obs, reward, done, info
