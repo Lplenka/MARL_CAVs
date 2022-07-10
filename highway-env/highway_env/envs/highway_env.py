@@ -9,7 +9,7 @@ from highway_env.envs.common.action import Action
 from highway_env.road.road import Road, RoadNetwork
 from highway_env.vehicle.controller import ControlledVehicle, MDPVehicle
 from highway_env.road.objects import Obstacle
-# from highway_env.utils import near_split
+from highway_env.utils import near_split
 from highway_env.vehicle.kinematics import Vehicle
 
 
@@ -36,7 +36,7 @@ class HighwayEnv(AbstractEnv):
                 "lateral": True},
             
             "lanes_count": 4,
-            "vehicles_count": 50,
+            "vehicles_count": 10,
             "controlled_vehicles": 1,
             "screen_width": 700,
             "screen_height": 300,            
@@ -92,10 +92,10 @@ class HighwayEnv(AbstractEnv):
             headway_distance / (self.config["HEADWAY_TIME"] * vehicle.speed)) if vehicle.speed > 0 else 0
         # compute overall reward
         reward = \
-            + self.config["collision_reward"] * self.vehicle.crashed \
+            + self.config["COLLISION_REWARD"] * self.vehicle.crashed \
             + self.config["right_lane_reward"] * lane / max(len(neighbours) - 1, 1) \
             + self.config["high_speed_reward"] * np.clip(scaled_speed, 0, 1)\
-            + self.config["HEADWAY_COST"] * (Headway_cost if Headway_cost < 0 else 0
+            + self.config["HEADWAY_COST"] * (Headway_cost if Headway_cost < 0 else 0)
 
         # reward = utils.lmap(reward,
         #                   [self.config["collision_reward"],
@@ -143,9 +143,11 @@ class HighwayEnv(AbstractEnv):
     #         (self.config["offroad_terminal"] and not self.vehicle.on_road)
 
 
-    def _reset(self) -> None:
+    def _reset(self, num_CAV=0) -> None:
         self._create_road()
         self._create_vehicles()
+        self.action_is_safe = True
+        self.T = int(self.config["duration"] * self.config["policy_frequency"])
 
     def _create_road(self) -> None:
         """Create a road composed of straight adjacent lanes."""
@@ -170,7 +172,7 @@ class HighwayEnv(AbstractEnv):
             self.road.vehicles.append(vehicle)
 
             for _ in range(others):
-                vehicle = other_vehicles_type.create_random(self.road, spacing=1 / self.config["vehicles_density"])
+                vehicle = other_vehicles_type.create_random(self.road, spacing=1 / self.config["traffic_density"])
                 vehicle.randomize_behavior()
                 self.road.vehicles.append(vehicle)
 
