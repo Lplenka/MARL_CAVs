@@ -22,7 +22,7 @@ class VehicleGraphics(object):
     BLACK = (60, 60, 60)
     PURPLE = (200, 0, 150)
     DEFAULT_COLOR = YELLOW
-    EGO_COLOR = BLUE
+    EGO_COLOR = GREEN
 
     @classmethod
     def display(cls, vehicle: Vehicle, surface: "WorldSurface", transparent: bool = False, offscreen: bool = False,
@@ -150,7 +150,7 @@ class VehicleGraphics(object):
         elif isinstance(vehicle, LinearVehicle):
             color = cls.YELLOW
         elif isinstance(vehicle, IDMVehicle):
-            color = cls.GREEN
+            color = cls.BLUE
         elif isinstance(vehicle, MDPVehicle):
             color = cls.EGO_COLOR
         if transparent:
