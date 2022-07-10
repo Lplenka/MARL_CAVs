@@ -35,6 +35,21 @@ def not_zero(x: float, eps: float = 1e-2) -> float:
     else:
         return -eps
 
+def near_split(x, num_bins=None, size_bins=None):
+    """
+    Split a number into several bins with near-even distribution.
+    You can either set the number of bins, or their size.
+    The sum of bins always equals the total.
+    :param x: number to split
+    :param num_bins: number of bins
+    :param size_bins: size of bins
+    :return: list of bin sizes
+    """
+    if num_bins:
+        quotient, remainder = divmod(x, num_bins)
+        return [quotient + 1] * remainder + [quotient] * (num_bins - remainder)
+    elif size_bins:
+        return near_split(x, num_bins=int(np.ceil(x / size_bins)))
 
 def wrap_to_pi(x: float) -> float:
     return ((x + np.pi) % (2 * np.pi)) - np.pi
