@@ -91,12 +91,13 @@ def train(args):
     env.config['traffic_density'] = config.getint('ENV_CONFIG', 'traffic_density')
     traffic_density = config.getint('ENV_CONFIG', 'traffic_density')
     env.config['action_masking'] = config.getboolean('MODEL_CONFIG', 'action_masking')
-
+    env.config['vehicle_count'] = config.getint('ENV_CONFIG', 'vehicle_count')
+    env.config['lanes_count'] = config.getint('ENV_CONFIG', 'lanes_count')
 
     print("env", env)
     print("env.T", env.T)
     print("ROLL_OUT_N_STEPS", ROLL_OUT_N_STEPS)
-
+    print(env.config)
 
     assert env.T % ROLL_OUT_N_STEPS == 0
 
@@ -112,6 +113,8 @@ def train(args):
     env_eval.config['MERGING_LANE_COST'] = config.getint('ENV_CONFIG', 'MERGING_LANE_COST')
     env_eval.config['traffic_density'] = config.getint('ENV_CONFIG', 'traffic_density')
     env_eval.config['action_masking'] = config.getboolean('MODEL_CONFIG', 'action_masking')
+    env_eval.config['vehicle_count'] = config.getint('ENV_CONFIG', 'vehicle_count')
+    env_eval.config['lanes_count'] = config.getint('ENV_CONFIG', 'lanes_count')
 
     state_dim = env.n_s
     action_dim = env.n_a
@@ -155,6 +158,7 @@ def train(args):
     plt.xlabel("Episode")
     plt.ylabel("Average Reward")
     plt.legend(["MAPPO"])
+    plt.savefig("Reward_analysis.png", dpi=200)
     plt.show()
 
 

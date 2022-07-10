@@ -38,8 +38,8 @@ class HighwayEnv(AbstractEnv):
             "lanes_count": 4,
             "vehicles_count": 10,
             "controlled_vehicles": 1,
-            "screen_width": 700,
-            "screen_height": 300,            
+            "screen_width": 600,
+            "screen_height": 200,            
             "centering_position": [0.3, 0.5],
             "scaling": 3,
             "simulation_frequency": 15,  # [Hz]
@@ -182,6 +182,13 @@ class HighwayEnv(AbstractEnv):
         """The cost signal is the occurrence of collision."""
         return float(self.vehicle.crashed)
 
+    def terminate(self):
+        return
+
+    def init_test_seeds(self, test_seeds):
+        self.test_num = len(test_seeds)
+        self.test_seeds = test_seeds
+
 
 class HighwayEnvFast(HighwayEnv):
     """
@@ -194,10 +201,10 @@ class HighwayEnvFast(HighwayEnv):
     def default_config(cls) -> dict:
         cfg = super().default_config()
         cfg.update({
-            "simulation_frequency": 5,
-            "lanes_count": 3,
-            "vehicles_count": 20,
-            "duration": 30,  # [s]
+            "simulation_frequency": 15,
+            "lanes_count": 4,
+            "vehicles_count": 10,
+            "duration": 40,  # [s]
             "ego_spacing": 1.5,
         })
         return cfg
@@ -228,11 +235,9 @@ class HighwayEnvMARL(HighwayEnvFast):
                 "observation_config": {
                     "type": "Kinematics"
                 }},
-            "controlled_vehicles": 3
+            "controlled_vehicles": 1
         })
         return config
-
-
 register(
     id='highway-v0',
     entry_point='highway_env.envs:HighwayEnv',
@@ -242,7 +247,6 @@ register(
     id='highway-fast-v0',
     entry_point='highway_env.envs:HighwayEnvFast',
 )
-
 register(
     id='highway-fast-multi-v0',
     entry_point='highway_env.envs:HighwayEnvMARL',
