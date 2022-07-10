@@ -208,6 +208,29 @@ class HighwayEnvFast(HighwayEnv):
                 vehicle.check_collisions = False
 
 
+
+class HighwayEnvMARL(HighwayEnvFast):
+    @classmethod
+    def default_config(cls) -> dict:
+        config = super().default_config()
+        config.update({
+            "action": {
+                "type": "MultiAgentAction",
+                "action_config": {
+                    "type": "DiscreteMetaAction",
+                    "lateral": True,
+                    "longitudinal": True
+                }},
+            "observation": {
+                "type": "MultiAgentObservation",
+                "observation_config": {
+                    "type": "Kinematics"
+                }},
+            "controlled_vehicles": 3
+        })
+        return config
+
+
 register(
     id='highway-v0',
     entry_point='highway_env.envs:HighwayEnv',
@@ -216,4 +239,9 @@ register(
 register(
     id='highway-fast-v0',
     entry_point='highway_env.envs:HighwayEnvFast',
+)
+
+register(
+    id='highway-fast-multi-v0',
+    entry_point='highway_env.envs:HighwayEnvMARL',
 )
