@@ -84,8 +84,8 @@ def train(args):
     env.config['duration'] = config.getint('ENV_CONFIG', 'duration')
     env.config['policy_frequency'] = config.getint('ENV_CONFIG', 'policy_frequency')
     env.config['COLLISION_REWARD'] = config.getint('ENV_CONFIG', 'COLLISION_REWARD')
-    env.config['HIGH_SPEED_REWARD'] = config.getint('ENV_CONFIG', 'HIGH_SPEED_REWARD')
-    env.config['HEADWAY_COST'] = config.getint('ENV_CONFIG', 'HEADWAY_COST')
+    env.config['HIGH_SPEED_REWARD'] = config.getfloat('ENV_CONFIG', 'HIGH_SPEED_REWARD')
+    env.config['HEADWAY_COST'] = config.getfloat('ENV_CONFIG', 'HEADWAY_COST')
     env.config['HEADWAY_TIME'] = config.getfloat('ENV_CONFIG', 'HEADWAY_TIME')
     env.config['MERGING_LANE_COST'] = config.getint('ENV_CONFIG', 'MERGING_LANE_COST')
     env.config['traffic_density'] = config.getint('ENV_CONFIG', 'traffic_density')
@@ -93,7 +93,10 @@ def train(args):
     env.config['action_masking'] = config.getboolean('MODEL_CONFIG', 'action_masking')
     env.config['vehicle_count'] = config.getint('ENV_CONFIG', 'vehicle_count')
     env.config['lanes_count'] = config.getint('ENV_CONFIG', 'lanes_count')
+    env.config['right_lane_reward'] = config.getfloat('ENV_CONFIG', 'right_lane_reward')
+    env.config['high_speed_reward'] = config.getfloat('ENV_CONFIG', 'high_speed_reward')
 
+    print("Vehicle Count:", env.config['vehicle_count'] )
     print("env", env)
     print("env.T", env.T)
     print("ROLL_OUT_N_STEPS", ROLL_OUT_N_STEPS)
@@ -107,14 +110,17 @@ def train(args):
     env_eval.config['duration'] = config.getint('ENV_CONFIG', 'duration')
     env_eval.config['policy_frequency'] = config.getint('ENV_CONFIG', 'policy_frequency')
     env_eval.config['COLLISION_REWARD'] = config.getint('ENV_CONFIG', 'COLLISION_REWARD')
-    env_eval.config['HIGH_SPEED_REWARD'] = config.getint('ENV_CONFIG', 'HIGH_SPEED_REWARD')
-    env_eval.config['HEADWAY_COST'] = config.getint('ENV_CONFIG', 'HEADWAY_COST')
+    env_eval.config['HIGH_SPEED_REWARD'] = config.getfloat('ENV_CONFIG', 'HIGH_SPEED_REWARD')
+    env_eval.config['HEADWAY_COST'] = config.getfloat('ENV_CONFIG', 'HEADWAY_COST')
     env_eval.config['HEADWAY_TIME'] = config.getfloat('ENV_CONFIG', 'HEADWAY_TIME')
     env_eval.config['MERGING_LANE_COST'] = config.getint('ENV_CONFIG', 'MERGING_LANE_COST')
     env_eval.config['traffic_density'] = config.getint('ENV_CONFIG', 'traffic_density')
     env_eval.config['action_masking'] = config.getboolean('MODEL_CONFIG', 'action_masking')
     env_eval.config['vehicle_count'] = config.getint('ENV_CONFIG', 'vehicle_count')
     env_eval.config['lanes_count'] = config.getint('ENV_CONFIG', 'lanes_count')
+    env_eval.config['right_lane_reward'] = config.getfloat('ENV_CONFIG', 'right_lane_reward')
+    env_eval.config['high_speed_reward'] = config.getfloat('ENV_CONFIG', 'high_speed_reward')
+
 
     state_dim = env.n_s
     action_dim = env.n_a
