@@ -36,7 +36,7 @@ class HighwayEnv(AbstractEnv):
                 "lateral": True},
             
             "lanes_count": 4,
-            "vehicles_count": 10,
+            "vehicles_count": 5,
             "controlled_vehicles": 1,
             "screen_width": 600,
             "screen_height": 200,            
@@ -46,9 +46,9 @@ class HighwayEnv(AbstractEnv):
             "duration": 40,  # time step in seconds
             "policy_frequency": 5,  # [Hz]
             "reward_speed_range": [10, 30],
-            "COLLISION_REWARD": 1,  # default=200
-            "HIGH_SPEED_REWARD": 1,  # default=0.5
-            "HEADWAY_COST": 4,  # default=1
+            "COLLISION_REWARD": -1,  # default=200
+            "HIGH_SPEED_REWARD": 0.5,  # default=0.5
+            "HEADWAY_COST": 0.6,  # default=1
             "HEADWAY_TIME": 1.2,  # default=1.2[s]
             "MERGING_LANE_COST": 4,  # default=4
             "traffic_density": 1,  # easy or hard modes
@@ -59,7 +59,7 @@ class HighwayEnv(AbstractEnv):
                                        # zero for other lanes.
             "high_speed_reward": 0.4,  # The reward received when driving at full speed, linearly mapped to zero for
                                        # lower speeds according to config["reward_speed_range"].
-            "lane_change_reward": 0,   # The reward received at each lane change action.
+            "lane_change_reward": 0.7,   # The reward received at each lane change action.
             "reward_speed_range": [20, 30],
             "offroad_terminal": False
         })
@@ -98,8 +98,8 @@ class HighwayEnv(AbstractEnv):
             + self.config["HEADWAY_COST"] * (Headway_cost if Headway_cost < 0 else 0)
 
         # reward = utils.lmap(reward,
-        #                   [self.config["collision_reward"],
-        #                    self.config["high_speed_reward"] + self.config["right_lane_reward"]],
+        #                   [self.config["COLLISION_REWARD"],
+        #                    self.config["high_speed_reward"] + self.config["right_lane_reward"] + self.config["HEADWAY_COST"] ],
         #                   [0, 1])
         reward = 0 if not self.vehicle.on_road else reward
         return reward
@@ -124,17 +124,27 @@ class HighwayEnv(AbstractEnv):
         obs = np.asarray(obs).reshape((len(obs), -1))
         return obs, reward, done, info
 
+    # def _is_terminal(self) -> bool:
+    #     """The episode is over when a collision occurs or when the access ramp has been passed."""
+    #     return any(vehicle.crashed for vehicle in self.controlled_vehicles) \
+    #            or self.time >= self.config["duration"] * self.config["policy_frequency"] \
+    #            or (self.config["offroad_terminal"] and not self.vehicle.on_road)
+
+    # def _agent_is_terminal(self, vehicle: Vehicle) -> bool:
+    #     """The episode is over when a collision occurs or when the access ramp has been passed."""
+    #     return vehicle.crashed \
+    #            or self.time >= self.config["duration"] * self.config["policy_frequency"] \
+    #            or (self.config["offroad_terminal"] and not self.vehicle.on_road)
+
     def _is_terminal(self) -> bool:
         """The episode is over when a collision occurs or when the access ramp has been passed."""
         return any(vehicle.crashed for vehicle in self.controlled_vehicles) \
-               or self.time >= self.config["duration"] * self.config["policy_frequency"] \
-               or (self.config["offroad_terminal"] and not self.vehicle.on_road)
+               or self.steps >= self.config["duration"] * self.config["policy_frequency"]
 
     def _agent_is_terminal(self, vehicle: Vehicle) -> bool:
         """The episode is over when a collision occurs or when the access ramp has been passed."""
         return vehicle.crashed \
-               or self.time >= self.config["duration"] * self.config["policy_frequency"] \
-               or (self.config["offroad_terminal"] and not self.vehicle.on_road)
+               or self.steps >= self.config["duration"] * self.config["policy_frequency"]
 
     # def _is_terminal(self) -> bool:
     #     """The episode is over if the ego vehicle crashed or the time is out."""
@@ -158,6 +168,9 @@ class HighwayEnv(AbstractEnv):
         """Create some new random vehicles of a given type, and add them on the road."""
         other_vehicles_type = utils.class_from_path(self.config["other_vehicles_type"])
         other_per_controlled = near_split(self.config["vehicles_count"], num_bins=self.config["controlled_vehicles"])
+
+        # print(other_vehicles_type)
+        # print(other_per_controlled)
 
         self.controlled_vehicles = []
         for others in other_per_controlled:
@@ -202,8 +215,8 @@ class HighwayEnvFast(HighwayEnv):
         cfg = super().default_config()
         cfg.update({
             "simulation_frequency": 15,
-            "lanes_count": 4,
-            "vehicles_count": 10,
+            "lanes_count": 3,
+            "vehicles_count": 5,
             "duration": 40,  # [s]
             "ego_spacing": 1.5,
         })
